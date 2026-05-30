@@ -19,16 +19,34 @@ class EnvironmentResolver:
     def get_antigravity_db_path() -> str:
         """Returns the OS-specific absolute path to the IDE's state.vscdb."""
         home = os.path.expanduser("~")
+        possible_names = ["Antigravity IDE", "Antigravity", "antigravity-ide", "antigravity"]
+        
+        for name in possible_names:
+            if sys.platform.startswith("win"):
+                appdata = os.environ.get("APPDATA", os.path.join(home, "AppData", "Roaming"))
+                path = os.path.join(appdata, name, "User", "globalStorage", "state.vscdb")
+            elif sys.platform.startswith("darwin"):
+                path = os.path.join(
+                    home, "Library", "Application Support", name,
+                    "User", "globalStorage", "state.vscdb",
+                )
+            else:  # Linux / BSD / WSL
+                path = os.path.join(home, ".config", name, "User", "globalStorage", "state.vscdb")
+                
+            if os.path.isfile(path):
+                return path
+
+        # Fallback to default if none exist
         if sys.platform.startswith("win"):
             appdata = os.environ.get("APPDATA", os.path.join(home, "AppData", "Roaming"))
-            return os.path.join(appdata, "antigravity-ide", "User", "globalStorage", "state.vscdb")
+            return os.path.join(appdata, "Antigravity IDE", "User", "globalStorage", "state.vscdb")
         elif sys.platform.startswith("darwin"):
             return os.path.join(
-                home, "Library", "Application Support", "antigravity-ide",
+                home, "Library", "Application Support", "Antigravity IDE",
                 "User", "globalStorage", "state.vscdb",
             )
-        else:  # Linux / BSD / WSL
-            return os.path.join(home, ".config", "Antigravity-IDE", "User", "globalStorage", "state.vscdb")
+        else:
+            return os.path.join(home, ".config", "Antigravity IDE", "User", "globalStorage", "state.vscdb")
 
     @staticmethod
     def get_storage_json_path() -> str:
@@ -38,8 +56,13 @@ class EnvironmentResolver:
 
     @staticmethod
     def get_gemini_base_path() -> str:
-        """Returns the path to ~/.gemini/antigravity-ide/."""
-        return os.path.join(os.path.expanduser("~"), ".gemini", "antigravity-ide")
+        """Returns the path to ~/.gemini/antigravity-ide/ or ~/.gemini/antigravity/."""
+        home = os.path.expanduser("~")
+        for name in ["antigravity-ide", "antigravity", "Antigravity IDE", "Antigravity"]:
+            path = os.path.join(home, ".gemini", name)
+            if os.path.isdir(path):
+                return path
+        return os.path.join(home, ".gemini", "antigravity-ide")
 
     @staticmethod
     def is_antigravity_running() -> bool:
