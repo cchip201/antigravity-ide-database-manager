@@ -37,7 +37,7 @@ Google Antigravity IDE (a heavily modified VS Code fork powering agent-first AI 
 - Power outages or unclean shutdowns
 - Certain workspace/session transitions
 
-The underlying `.pb` conversation data files remain **fully intact** on disk at `~/.gemini/antigravity/conversations/`, but the IDE's internal SQLite database (`state.vscdb`) loses its UI index mappings — specifically the `ChatSessionStore.index` (JSON) and `trajectorySummaries` (Protobuf) — causing the sidebar to display zero history.
+The underlying `.pb` conversation data files remain **fully intact** on disk at `~/.gemini/antigravity-ide/conversations/`, but the IDE's internal SQLite database (`state.vscdb`) loses its UI index mappings — specifically the `ChatSessionStore.index` (JSON) and `trajectorySummaries` (Protobuf) — causing the sidebar to display zero history.
 
 **This tool rebuilds those internal indices from your intact `.pb` files, restoring your full conversation history.**
 
@@ -69,7 +69,7 @@ All 11 bugs stem from the IDE's failure to atomically flush its internal indices
 2. **`antigravityUnifiedStateSync.trajectorySummaries`** (Protobuf) — Loses UUID-to-conversation mappings
 3. **`storage.json`** — Workspace binding metadata falls out of sync
 
-The raw `.pb` data files at `~/.gemini/antigravity/conversations/` and brain artifacts at `~/.gemini/antigravity/brain/` are **never affected**. This means the data is fully recoverable — which is exactly what this tool does.
+The raw `.pb` data files at `~/.gemini/antigravity-ide/conversations/` and brain artifacts at `~/.gemini/antigravity-ide/brain/` are **never affected**. This means the data is fully recoverable — which is exactly what this tool does.
 
 ---
 
@@ -127,7 +127,7 @@ When the bug occurs, one or both of these indices lose their entries, even thoug
 
 This tool:
 
-1. **Discovers** all local `.pb` conversation files in `~/.gemini/antigravity/conversations/`
+1. **Discovers** all local `.pb` conversation files in `~/.gemini/antigravity-ide/conversations/`
 2. **Extracts titles** from brain artifacts (`task.md`, `implementation_plan.md`, `walkthrough.md`)
 3. **Synthesizes** Protobuf entries with byte-accurate Wire Type 2 nested schemas (Fields 9 and 17)
 4. **Merges** new entries into the existing indices without destroying cloud-only conversations
@@ -188,9 +188,9 @@ build_release.py              ← Builds the cross-platform .pyz zipapp
 
 | Platform | Database Path | Status |
 |----------|---------------|--------|
-| **Windows** | `%APPDATA%\antigravity\User\globalStorage\state.vscdb` | ✅ Tested |
-| **macOS** | `~/Library/Application Support/antigravity/User/globalStorage/state.vscdb` | ✅ Supported |
-| **Linux** | `~/.config/Antigravity/User/globalStorage/state.vscdb` | ✅ Supported |
+| **Windows** | `%APPDATA%\antigravity-ide\User\globalStorage\state.vscdb` | ✅ Supported |
+| **macOS** | `~/Library/Application Support/antigravity-ide/User/globalStorage/state.vscdb` | ✅ Supported |
+| **Linux** | `~/.config/Antigravity-IDE/User/globalStorage/state.vscdb` | ✅ Supported |
 
 - **Python**: 3.10+
 - **Dependencies**: None (uses only Python standard library)
@@ -297,7 +297,7 @@ Visual, guided execution of the 6-phase recovery pipeline with a real-time progr
 | Phase | Description |
 |-------|-------------|
 | **Backup** | Creates a safety backup of the current database |
-| **Discovery** | Scans `~/.gemini/antigravity/conversations/` for `.pb` files |
+| **Discovery** | Scans `~/.gemini/antigravity-ide/conversations/` for `.pb` files |
 | **Titles** | Extracts titles from brain artifacts (`task.md`, `implementation_plan.md`, etc.) |
 | **Injection** | Synthesizes Protobuf entries and injects into `state.vscdb` |
 | **JSON** | Synchronizes the JSON `ChatSessionStore.index` |

@@ -21,14 +21,14 @@ class EnvironmentResolver:
         home = os.path.expanduser("~")
         if sys.platform.startswith("win"):
             appdata = os.environ.get("APPDATA", os.path.join(home, "AppData", "Roaming"))
-            return os.path.join(appdata, "antigravity", "User", "globalStorage", "state.vscdb")
+            return os.path.join(appdata, "antigravity-ide", "User", "globalStorage", "state.vscdb")
         elif sys.platform.startswith("darwin"):
             return os.path.join(
-                home, "Library", "Application Support", "antigravity",
+                home, "Library", "Application Support", "antigravity-ide",
                 "User", "globalStorage", "state.vscdb",
             )
         else:  # Linux / BSD / WSL
-            return os.path.join(home, ".config", "Antigravity", "User", "globalStorage", "state.vscdb")
+            return os.path.join(home, ".config", "Antigravity-IDE", "User", "globalStorage", "state.vscdb")
 
     @staticmethod
     def get_storage_json_path() -> str:
@@ -38,8 +38,8 @@ class EnvironmentResolver:
 
     @staticmethod
     def get_gemini_base_path() -> str:
-        """Returns the path to ~/.gemini/antigravity/."""
-        return os.path.join(os.path.expanduser("~"), ".gemini", "antigravity")
+        """Returns the path to ~/.gemini/antigravity-ide/."""
+        return os.path.join(os.path.expanduser("~"), ".gemini", "antigravity-ide")
 
     @staticmethod
     def is_antigravity_running() -> bool:

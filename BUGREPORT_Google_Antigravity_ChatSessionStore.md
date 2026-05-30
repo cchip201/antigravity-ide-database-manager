@@ -14,7 +14,7 @@
 
 ## Summary
 
-The Antigravity IDE silently resets its two internal conversation indices — `chat.ChatSessionStore.index` (JSON) and `antigravityUnifiedStateSync.trajectorySummaries` (Protobuf) — during application shutdown, IDE updates, power outages, or certain workspace transitions. This causes all conversation history to disappear from the UI sidebar, even though the underlying `.pb` conversation data files remain fully intact on disk at `~/.gemini/antigravity/conversations/`.
+The Antigravity IDE silently resets its two internal conversation indices — `chat.ChatSessionStore.index` (JSON) and `antigravityUnifiedStateSync.trajectorySummaries` (Protobuf) — during application shutdown, IDE updates, power outages, or certain workspace transitions. This causes all conversation history to disappear from the UI sidebar, even though the underlying `.pb` conversation data files remain fully intact on disk at `~/.gemini/antigravity-ide/conversations/`.
 
 This is **not data loss** — the raw conversation data is never affected. It is an **index corruption** bug where the IDE's UI layer loses its mapping between conversation UUIDs and sidebar entries.
 
@@ -35,11 +35,11 @@ This is **not data loss** — the raw conversation data is never affected. It is
 
 ```bash
 # Count the .pb files — these are the raw conversation data
-ls ~/.gemini/antigravity/conversations/ | wc -l
+ls ~/.gemini/antigravity-ide/conversations/ | wc -l
 # Example output: 100 (all files present)
 
 # Inspect the database — the index is zeroed out
-sqlite3 "$APPDATA/antigravity/User/globalStorage/state.vscdb" \
+sqlite3 "$APPDATA/antigravity-ide/User/globalStorage/state.vscdb" \
   "SELECT value FROM ItemTable WHERE key = 'chat.ChatSessionStore.index';"
 # Output: {"version":1,"entries":{}}    ← EMPTY
 ```
@@ -61,7 +61,7 @@ During shutdown, the IDE performs a non-atomic flush of these two indices. If th
 
 1. **JSON index** resets to `{"version":1,"entries":{}}` — all conversation mappings are deleted.
 2. **Protobuf blob** either resets to empty or retains a partial state that no longer matches the JSON index.
-3. The **raw `.pb` files** at `~/.gemini/antigravity/conversations/` are **never modified** by this process — they remain fully intact.
+3. The **raw `.pb` files** at `~/.gemini/antigravity-ide/conversations/` are **never modified** by this process — they remain fully intact.
 
 ### Why The UI Shows Nothing
 
@@ -151,7 +151,7 @@ We have developed and released an open-source recovery tool that rebuilds both i
 
 ### How It Works
 
-1. Discovers all `.pb` conversation files in `~/.gemini/antigravity/conversations/`.
+1. Discovers all `.pb` conversation files in `~/.gemini/antigravity-ide/conversations/`.
 2. Extracts titles from brain artifacts (`task.md`, `implementation_plan.md`, `walkthrough.md`).
 3. Synthesizes Protobuf entries with byte-accurate Wire Type 2 nested schemas.
 4. Merges new entries into the existing indices (non-destructive — preserves cloud-only conversations).

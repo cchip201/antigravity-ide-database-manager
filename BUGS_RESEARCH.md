@@ -205,4 +205,4 @@ All 11 bugs stem from the same fundamental architectural flaw: the IDE's failure
 2. **`antigravityUnifiedStateSync.trajectorySummaries`** (Protobuf) — Loses UUID-to-conversation mappings
 3. **`storage.json`** — Workspace binding metadata falls out of sync
 
-The raw `.pb` data files at `~/.gemini/antigravity/conversations/` and brain artifacts at `~/.gemini/antigravity/brain/` are **never affected**. This means the data is fully recoverable — which is exactly what this Database Manager does.
+The raw `.pb` data files at `~/.gemini/antigravity-ide/conversations/` and brain artifacts at `~/.gemini/antigravity-ide/brain/` are **never affected**. This means the data is fully recoverable — which is exactly what this Database Manager does.
