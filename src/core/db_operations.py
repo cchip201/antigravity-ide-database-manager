@@ -499,11 +499,21 @@ def run_recovery_pipeline(
     except OSError as exc:
         return RecoveryResult(success=False, error=f"Cannot read conversations dir: {exc}")
 
-    all_pbs = sorted(
-        [f[:-3] for f in raw_files if f.endswith(".pb")],
-        key=lambda f: os.path.getmtime(os.path.join(convs_dir, f"{f}.pb")),
-        reverse=True,
-    )
+    def _get_mtime(cid: str) -> float:
+        pb = os.path.join(convs_dir, f"{cid}.pb")
+        db = os.path.join(convs_dir, f"{cid}.db")
+        if os.path.exists(pb): return os.path.getmtime(pb)
+        if os.path.exists(db): return os.path.getmtime(db)
+        return 0.0
+
+    cids = set()
+    for f in raw_files:
+        if f.endswith(".pb"):
+            cids.add(f[:-3])
+        elif f.endswith(".db") and not f.endswith("-shm") and not f.endswith("-wal"):
+            cids.add(f[:-3])
+
+    all_pbs = sorted(list(cids), key=_get_mtime, reverse=True)
 
     if not all_pbs:
         return RecoveryResult(success=True, conversations_rebuilt=0)
@@ -595,9 +605,12 @@ def run_recovery_pipeline(
         for cid, title, source, inner_data, has_ws in resolved:
             ws_map = ws_assignments.get(cid)
             pb_path = os.path.join(convs_dir, f"{cid}.pb")
+            db_path_file = os.path.join(convs_dir, f"{cid}.db")
+            
+            actual_file = pb_path if os.path.exists(pb_path) else (db_path_file if os.path.exists(db_path_file) else None)
 
-            pb_mtime = int(os.path.getmtime(pb_path)) if os.path.exists(pb_path) else int(time.time())
-            pb_ctime = int(os.path.getctime(pb_path)) if os.path.exists(pb_path) else int(time.time())
+            pb_mtime = int(os.path.getmtime(actual_file)) if actual_file else int(time.time())
+            pb_ctime = int(os.path.getctime(actual_file)) if actual_file else int(time.time())
 
             entry = ProtobufEncoder.build_trajectory_entry(
                 cid, title, ws_map, pb_ctime, pb_mtime, existing_inner_data=inner_data
